@@ -1,7 +1,7 @@
-from layers import layer
+from layers.layers import layer
 import numpy as np
-from D_data import D_data
-from kernels import *
+from utils.D_data import D_data
+from cuda_kernels import RELUK, MMK
 
 class relu(layer):
     def __init__(self, in_features, out_features, batch_size):
@@ -11,7 +11,6 @@ class relu(layer):
         self.cache['d_in'] = D_data(shape=self.in_shape)
 
         # kernels
-        self.kernels = {}
         self.kernels["f_reluk"] = RELUK()
         self.kernels["b_reluk"] = RELUK()
         self.kernels["b_mmk"] = MMK()

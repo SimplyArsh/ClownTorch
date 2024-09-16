@@ -1,22 +1,27 @@
 from NNet import NNet
 import numpy as np
-import pycuda.driver as cuda
-from python_layers import *
-from D_data import D_data
+from layers.python_layers import *
+from utils import softmax_loss, D_data, solver
+
+nn = NNet(batch_size=100)
+nn.add_affine_layer(30, 40)
+nn.add_relu()
+nn.add_affine_layer(40, 20)
+nn.add_relu()
+nn.add_affine_layer(20, 5)
+
+data = {}
+data['X_train'] = np.random.randn(10000, 30).astype(np.float32)
+data['y_train'] = np.random.uniform(low=0,high=5, size=(10000,)).astype(np.int32)
+data['X_val'] = np.random.randn(10000, 30).astype(np.float32)
+data['y_val'] = np.random.uniform(low=0,high=5, size=(10000,)).astype(np.int32)
 
 
-nn = NNet(batch_size=1000)
-# nn.add_affine_layer(200, 212)
-# nn.add_affine_layer(212, 300)
-nn.add_relu(200)
+solver = solver.Solver1(nn, data,
+                num_epochs=10, batch_size=100,
+                verbose=True, print_every=20)
+solver.train()
 
-h_in = np.random.randn(1000,200).astype(np.float32)
-
-h_out = nn.forward(h_in)
-
-h_loss = np.random.randn(1000,200).astype(np.float32)
-h_dx = nn.backward(h_loss)
-print(h_dx)
 
 # h_W = nn.layers[0].params['d_W'].to_host()
 # h_b = nn.layers[0].params['d_b'].to_host()

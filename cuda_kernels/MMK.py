@@ -1,8 +1,10 @@
 import numpy as np
+from utils import inst_module
+
 # multiplication
 class MMK():
     def __init__(self):
-        self.kernel = module.get_function("matrixMulKernel")
+        self.kernel = inst_module.module.get_function("matrixMulKernel")
         self.cache_avail = False
 
         # to be filled

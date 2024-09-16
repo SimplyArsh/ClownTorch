@@ -1,7 +1,8 @@
-from layers import layer
 import numpy as np
-from D_data import D_data
-from kernels import *
+from layers.layers import layer
+from utils.D_data import D_data
+from utils.inst_module import *
+from cuda_kernels import MMK, PK, TK, SAK
 
 class affine(layer):
     def __init__(self, in_features, out_features, batch_size, weight_scale=1e-3):
@@ -23,9 +24,8 @@ class affine(layer):
         self.cache['d_in'] = D_data(shape=self.in_shape)
 
         # kernels
-        self.kernels = {}
         self.kernels["f_mmk"] = MMK()
-        self.kernels["f_addk"] = ADDK()
+        self.kernels["f_addk"] = PK()
         self.kernels["b_tk1"] = TK()
         self.kernels["b_mmk1"] = MMK()
         self.kernels["b_tk2"] = TK()
@@ -35,9 +35,11 @@ class affine(layer):
     def forward(self, d_in, d_out, **kwargs):
 
         # W*x + b
-        self.kernels["f_mmk"].run(d_in, self.params['d_W'], d_out)
-        self.kernels["f_addk"].run(d_out, self.params['d_b'])
-        
+        d_W_x = d_out.empty_like()
+        self.kernels["f_mmk"].run(d_in, self.params['d_W'], d_W_x)
+        self.kernels["f_addk"].run(d_W_x, self.params['d_b'], d_out, '+')
+        d_W_x.free()
+
         # update cache
         self.cache['d_in'].copy_from(d_in)
         self.cache['d_W'].copy_from(self.params['d_W'])
